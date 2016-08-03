@@ -48,22 +48,28 @@ class tba:
         jsonified = response.json()
         return jsonified['nickname']
 
-    def img(self, teamNumber):
+    def img(self, teamNumber, year):
         #teamNumber = raw_input("please enter a team number: ")
-        myRequest = (baseURL + 'team/frc' + str(teamNumber) + '/'+ str(now.year) + "/media")
+        myRequest = (baseURL + 'team/frc' + str(teamNumber) + '/'+ str(year) + "/media")
         response = requests.get(myRequest, headers=header)
         jsonified = response.json()
         #print(jsonified)
         key = ""
-        if jsonified != None:
+        if jsonified != []:
             type = jsonified[0]['type']
             if type == "imgur":
                 key = jsonified[0]['foreign_key']
-                #print key
-            image = im.get_image(key)
-            #print(image.link)
-            imgURL = ("www." + str(type)  + ".com/" + str(key))
-            return image.link
+                print key
+                image = im.get_image(key)
+                imgURL = (image.link)
+            elif type == "cdphotothread":
+                key = jsonified[0]['details']['image_partial']
+                print(key)
+                CDendURL = key
+                imgURL = "https://www.chiefdelphi.com/media/img/" + str(CDendURL)
+        else:
+            imgURL = "http://www.404notfound.fr/assets/images/pages/img/androiddev101.jpg"
+        return imgURL
 
 
 
@@ -72,7 +78,12 @@ tba = tba()
 
 @route('/Team/:TeamNumber')
 def ShowImage(TeamNumber):
-    imgURL = tba.img(TeamNumber)
-    return '<h1>Team %s 2016 Robot<br><img src=%s></h1>' % (TeamNumber, imgURL)
+    imgURL = tba.img(TeamNumber, str(now.year))
+    return '<<h1 align=\'middle\'>Team %s %s Robot<br><img src=%s height="500" width="auto"></h1>' % (TeamNumber, str(now.year), imgURL)
+
+@route('/Team/:TeamNumber/:Year')
+def ShowImage(TeamNumber, Year):
+    imgURL = tba.img(TeamNumber, Year)
+    return '<h1 align=\'middle\'>Team %s %s Robot<br><img src=%s height="500" width="auto"></h1>' % (TeamNumber, Year, imgURL)
 
 run(host='localhost', port=8000, reloader=True)
